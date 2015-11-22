@@ -9,4 +9,5 @@ from clint.textui import puts, colored, indent
 from parser import parse
 
 if __name__ == '__main__':
-    print(parse(Args().files))
+    #print(parse(Args().files))
+    parse(Args().files)
