@@ -10,4 +10,7 @@ from parser import parse
 
 if __name__ == '__main__':
     #print(parse(Args().files))
-    parse(Args().files)
+    #parse(Args().files)
+    for section, list in parse(Args().files).items():
+        puts(section)
+        print(len(list))
