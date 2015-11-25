@@ -6,11 +6,12 @@ import os
 
 from clint.arguments import Args
 from clint.textui import puts, colored, indent
-from parser import parse
+from parser import LogParser
 
 if __name__ == '__main__':
-    #print(parse(Args().files))
-    #parse(Args().files)
-    for section, list in parse(Args().files).items():
-        puts(section)
-        print(len(list))
+    parser = LogParser(Args().files)
+    stat = {}
+    for section, list in parser.parse().items():
+        stat[section] = len(list)
+    for w in sorted(stat, key=stat.get, reverse=True):
+        print(w, stat[w])
