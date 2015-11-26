@@ -26,16 +26,17 @@ class DisplayManager():
         """ Updates the display with new data
         """
         self.stdscr.clear()
-        stat = {}
-        # Count the nimber of view by section
-        for section, list in parsedData.items():
-            stat[section] = len(list)
-        # serves as a line counter
+        # This functions serve to remove one loop of data processing
+        # sorted second argument must be a function returning a comparison key
+        # so we need this function to do so
+        def lengthFromKey(x):
+            return len(parsedData.get(x))
+
+        # serves as a line counter for text printing
         y = 0
-        for w in sorted(stat, key=stat.get, reverse=True):
+        for section in sorted(parsedData, key= lengthFromKey, reverse=True):
             # print the section name followed by the number of view
-            self.stdscr.addstr(y,0,w + " ")
-            self.stdscr.addstr(str(stat[w]))
+            self.stdscr.addstr(y,0,"The section " + section + " has " + str(len(parsedData.get(section))) + " view")
             # update line count
             y += 1
         self.stdscr.refresh()
