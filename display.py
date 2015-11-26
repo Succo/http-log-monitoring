@@ -1,13 +1,26 @@
+#import curses
+import curses
+
 class DisplayManager():
     """This class serves to display
     data on screen it uses curses
     """
 
-    def __init__(self, stdscr):
-        self.stdscr = stdscr
-        # Clear screen
-        stdscr.clear()
+    def __init__(self):
+        """ Initialise the curse application
+        """
+        self.stdscr = curses.initscr()
+        curses.noecho()
+        curses.cbreak()
+        self.stdscr.keypad(True)
 
+    def clearCurse(self):
+        """ Clean the curse application
+        """
+        curses.nocbreak()
+        self.stdscr.keypad(False)
+        curses.echo()
+        curses.endwin()
 
     def display(self, parsedData):
         """ Updates the display with new data
