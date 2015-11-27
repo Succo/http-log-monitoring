@@ -16,5 +16,7 @@ from display import DisplayManager
 if __name__ == '__main__':
     parser = LogParser(Args().files)
     displayManager = DisplayManager()
-    displayManager.display(parser.parse())
+    while True:
+        parser.parse()
+        displayManager.display(parser.sectionResult)
     displayManager.clearCurse()

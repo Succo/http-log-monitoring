@@ -24,39 +24,85 @@ class LogParser():
         ]
         self.pattern = re.compile(r'\s+'.join(parts)+r'\s*\Z')
         #This is the list of files to scan for logs
-        self.files = files
-        # a dict to save list value associed to a key in query made to the server
+        self.files = []
+        for file in files:
+            # We fill it with tuple containing file, and number of line read on file
+            # It will help to find the latest logs faster
+            self.files += [(file, 0)]
+        # a dict to save list value associed to a key in query made to the
         self.queryResult = {}
+        self.sectionResult = {}
 
     def parse(self):
         """ Return a dictionnary of all
         entry stored in the list of Logs
         classed by section
         """
-        result = {}
-        for file in self.files:
+        # This is the time where we started processing
+        # it serves to check that we are only adding recent entry to our data
+        parseTime = datetime.now(timezone.utc)
+        for file, latestLineNumber  in self.files:
             with open(file, 'r') as log:
-                for line in log:
-                    # here we match the patten against the log line
-                    # and them use groupdict to creat a dict object
-                    matched = self.pattern.match(line)
-                    # In case of broken entry to avoid breaking the program
-                    if (matched == None):
-                        break
-                    entry = matched.groupdict()
-                    date = entry["time"]
-                    # we take the date a python date object for easier manipulation
-                    entry["time"] = datetime.strptime(date, "%d/%b/%Y:%H:%M:%S %z")
-                    #print((entry["time"] - datetime.now(timezone.utc)).total_seconds())
-                    # we process the request to remove first the queries,
-                    # then extract the section
-                    section = self.clearQuery(entry["ressource"])
-                    section = self.extractSection(section)
-                    if section in result:
-                        result[section] += [entry]
-                    else:
-                        result[section] = [entry]
-        return result
+                # This is the number of line read in the file
+                # It is compared to the biggest line
+                # read on previous read
+                lineNumber = 0
+                if (latestLineNumber > 0):
+                    # We are on an already opened file
+                    # Latest line number correspond to the oldest line of the previous read
+                    for line in log:
+                        if (lineNumber > latestLineNumber):
+                            # first unread line of the file since last call
+                            # We process it
+                            section, entry = self.parseLine(line)
+                            if section:
+                                # Then we add it to our dict of result to the
+                                # proper place
+                                if section in self.sectionResult:
+                                    self.sectionResult[section] += [entry]
+                                else:
+                                    self.sectionResult[section] = [entry]
+                        lineNumber += 1
+                else :
+                    # We might be opening the file for the first time (or is was empty before)
+                    # We need to parse and check the time of all entry
+                    # to get only the latest 10s of the file
+
+                    # We keep count of the number of read line for next time
+                    lineNumber = 0
+                    for line in log:
+                        section, entry = self.parseLine(line)
+                        if section:
+                            # We can then compare the time
+                            # if (abs((entry["time"] - parseTime).total_seconds()) < 10):
+                            if True:
+                                # Then we add it to our dict of result to the
+                                # proper place
+                                if section in self.sectionResult:
+                                    self.sectionResult[section] += [entry]
+                                else:
+                                    self.sectionResult[section] = [entry]
+                        lineNumber +=1
+
+
+        return
+
+    def parseLine(self, line):
+        # here we match the patten against the log line
+        # and them use groupdict to creat a dict object
+        matched = self.pattern.match(line)
+        # In case of broken entry to avoid having the program plant
+        if (matched == None):
+            return (False , False)
+        entry = matched.groupdict()
+        date = entry["time"]
+        # we take the date a python date object for easier manipulation
+        entry["time"] = datetime.strptime(date, "%d/%b/%Y:%H:%M:%S %z")
+        # we process the request to remove first the queries,
+        # then extract the section
+        section = self.clearQuery(entry["ressource"])
+        section = self.extractSection(section)
+        return (section, entry)
 
     def extractSection(self, ressource):
         """Given a string corresponding to a

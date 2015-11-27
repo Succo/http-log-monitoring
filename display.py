@@ -40,5 +40,4 @@ class DisplayManager():
             # update line count
             y += 1
         self.stdscr.refresh()
-        self.stdscr.getkey()
         return
