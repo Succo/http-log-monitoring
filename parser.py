@@ -77,6 +77,7 @@ class LogParser():
         # This is the time where we started processing
         # it serves to check that we are only adding recent entry to our data
         parseTime = datetime.now(timezone.utc)
+        shortTerm = self.data["shortTerm"]["sectionResult"]
         for numberOfFileRead  in range(len(self.files)):
             # we read the list that way to be able to update it place
             file, latestLineNumber = self.files[numberOfFileRead]
@@ -97,10 +98,10 @@ class LogParser():
                             if (latestLineNumber > 0) or (abs((entry["time"] - parseTime).total_seconds()) < 10):
                                 # Then we add it to our dict of result to the
                                 # proper place
-                                if section in self.data["shortTerm"]["sectionResult"]:
-                                    self.data["shortTerm"]["sectionResult"][section] += [entry]
+                                if section in shortTerm:
+                                    shortTerm[section] += [entry["ressource"]]
                                 else:
-                                    self.data["shortTerm"]["sectionResult"][section] = [entry]
+                                    shortTerm[section] = [entry["ressource"]]
                     lineNumber += 1
                 self.files[numberOfFileRead] = (file,lineNumber)
         self.updatingDataLock.release()

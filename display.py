@@ -58,17 +58,21 @@ class DisplayManager():
         self.updatingDataLock.acquire()
 
         self.statWindow.clear()
+
+        # serves as a line counter for text printing
+        y = 0
+        # To reduce code cruft
+        result = self.data["shortTerm"]["sectionResult"]
+
         # This functions serve to remove one loop of data processing
         # sorted second argument must be a function returning a comparison key
         # so we need this function to do so
         def lengthFromKey(x):
-            return len(self.data["shortTerm"]["sectionResult"].get(x))
+            return len(result.get(x))
 
-        # serves as a line counter for text printing
-        y = 0
-        for section in sorted(self.data["shortTerm"]["sectionResult"], key= lengthFromKey, reverse=True):
+        for section in sorted(result, key= lengthFromKey, reverse=True):
             # print the section name followed by the number of view
-            self.statWindow.addstr(y,0,"The section " + section + " has " + str(len(self.data["shortTerm"]["sectionResult"].get(section))) + " view")
+            self.statWindow.addstr(y,0,"The section " + section + " has " + str(len(result.get(section))) + " view")
             # update line count
             y += 1
 
