@@ -1,12 +1,14 @@
 import re
 from datetime import datetime, timezone
+import threading
+import time
 
 class LogParser():
     """This class has function designed
     to process log and return a dict
     """
 
-    def __init__(self, files):
+    def __init__(self, files, updatingDataLock):
         # This list of regex is used to parse each line
         # Most entry are defined as text between space
         parts = [
@@ -32,12 +34,27 @@ class LogParser():
         # a dict to save list value associed to a key in query made to the
         self.queryResult = {}
         self.sectionResult = {}
+        # Keep the lock to block every time we parse data
+        self.updatingDataLock = updatingDataLock
+
+        def parseManager(display):
+            """ A function to call in loop
+            display and update it
+            """
+            while True:
+                display()
+                time.sleep(1)
+
+        # We define a thread to call too parse the files
+        self.parse = threading.Thread(target=parseManager, args= (self.parse,), daemon = True)
 
     def parse(self):
         """ Return a dictionnary of all
         entry stored in the list of Logs
         classed by section
         """
+
+        self.updatingDataLock.acquire()
         # This is the time where we started processing
         # it serves to check that we are only adding recent entry to our data
         parseTime = datetime.now(timezone.utc)
@@ -58,7 +75,7 @@ class LogParser():
                             if section:
                                 # Then we add it to our dict of result to the
                                 # proper place
-                                if section in self.sectionResult:
+                                if section in sectionResult:
                                     self.sectionResult[section] += [entry]
                                 else:
                                     self.sectionResult[section] = [entry]
@@ -74,8 +91,7 @@ class LogParser():
                         section, entry = self.parseLine(line)
                         if section:
                             # We can then compare the time
-                            # if (abs((entry["time"] - parseTime).total_seconds()) < 10):
-                            if True:
+                            if (abs((entry["time"] - parseTime).total_seconds()) < 10):
                                 # Then we add it to our dict of result to the
                                 # proper place
                                 if section in self.sectionResult:
@@ -83,8 +99,7 @@ class LogParser():
                                 else:
                                     self.sectionResult[section] = [entry]
                         lineNumber +=1
-
-
+        self.updatingDataLock.release()
         return
 
     def parseLine(self, line):

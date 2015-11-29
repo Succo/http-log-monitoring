@@ -3,6 +3,7 @@
 
 import sys
 import os
+import time
 
 # Clint used to handle command line arguments
 # TODO get rid of it, as it is underused
@@ -13,10 +14,14 @@ from clint.textui import puts, colored, indent
 from parser import LogParser
 from display import DisplayManager
 
+import threading
+
 if __name__ == '__main__':
-    parser = LogParser(Args().files)
-    displayManager = DisplayManager()
-    while True:
-        parser.parse()
-        displayManager.display(parser.sectionResult)
+    # This lock serve too avoid reading data when the parser is updating them
+    updatingDataLock = threading.Lock()
+    parser = LogParser(Args().files, updatingDataLock)
+    displayManager = DisplayManager(parser.sectionResult ,updatingDataLock)
+    parser.parse.start()
+    displayManager.display.start()
+    displayManager.stdscr.getch()
     displayManager.clearCurse()
