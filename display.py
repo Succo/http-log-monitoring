@@ -7,7 +7,7 @@ class DisplayManager():
     data on screen it uses curses
     """
 
-    def __init__(self, sectionResult, updatingDataLock):
+    def __init__(self, data, updatingDataLock):
         """ Initialise the curse application
         """
         self.stdscr = curses.initscr()
@@ -26,7 +26,7 @@ class DisplayManager():
         self.updatingDataLock = updatingDataLock
 
         # We keep a reference to the result generated (and updated) by the parser
-        self.sectionResult = sectionResult
+        self.data = data
 
         def displayManager(display):
             """ A function to call in loop
@@ -60,13 +60,13 @@ class DisplayManager():
         # sorted second argument must be a function returning a comparison key
         # so we need this function to do so
         def lengthFromKey(x):
-            return len(self.sectionResult.get(x))
+            return len(self.data["shortTerm"]["sectionResult"].get(x))
 
         # serves as a line counter for text printing
         y = 0
-        for section in sorted(self.sectionResult, key= lengthFromKey, reverse=True):
+        for section in sorted(self.data["shortTerm"]["sectionResult"], key= lengthFromKey, reverse=True):
             # print the section name followed by the number of view
-            self.statWindow.addstr(y,0,"The section " + section + " has " + str(len(self.sectionResult.get(section))) + " view")
+            self.statWindow.addstr(y,0,"The section " + section + " has " + str(len(self.data["shortTerm"]["sectionResult"].get(section))) + " view")
             # update line count
             y += 1
         self.statWindow.refresh()
