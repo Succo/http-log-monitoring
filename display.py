@@ -69,6 +69,8 @@ class DisplayManager():
             self.statWindow.addstr(y,0,"The section " + section + " has " + str(len(self.data["shortTerm"]["sectionResult"].get(section))) + " view")
             # update line count
             y += 1
+
+        self.statWindow.addstr(y,0,"Total number of request in the last 2 min: " + str(sum(self.data["longTerm"])))
         self.statWindow.refresh()
         self.updatingDataLock.release()
         return

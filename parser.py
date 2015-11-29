@@ -37,7 +37,8 @@ class LogParser():
 
         # Long (2 min) and short (10 s) term data
         self.data["shortTerm"] = {}
-        self.data["longTerm"] = {}
+        # Long term will be used as a pile of 12 item (2min / 10s = 12)
+        self.data["longTerm"] = []
 
         # In the short term dict we will store:
         # section (a dict with a list of URL as item)
@@ -55,6 +56,7 @@ class LogParser():
             display and update it
             """
             while True:
+                self.updateData()
                 parse()
                 time.sleep(1)
 
@@ -150,3 +152,24 @@ class LogParser():
                 self.data["shortTerm"]["queryResult"][key] = [value]
         # We then return the request striped of query
         return requestAndQuery[0]
+
+    def updateData(self):
+        """Will serves to update the data obect
+        It will update the long term part (clearing old entry...)
+        """
+        # In the long term dict we just keep the number of request in the last segment
+        numberOfRequest = 0
+        for section in self.data["shortTerm"]["sectionResult"]:
+            numberOfRequest += len(self.data["shortTerm"]["sectionResult"][section])
+        # We only keep up to 12 item if the long term result
+        if (len(self.data["longTerm"])) > 11:
+            self.data["longTerm"].pop(0)
+
+        self.data["longTerm"].append(numberOfRequest)
+        # In the short term dict we will store:
+        # section (a dict with a list of URL as item)
+        self.data["shortTerm"]["sectionResult"] = {}
+        # query (a dict with a list of the query result as item)
+        self.data["shortTerm"]["queryResult"] = {}
+        # total size of the content served by the server
+        self.data["shortTerm"]["contentServed"] = 0
