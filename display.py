@@ -51,6 +51,18 @@ class DisplayManager():
         curses.endwin()
         return
 
+    def readableByte(self, byte):
+        """ Return an human readable string
+         of the byte given in  entry (approximate)
+         """
+        suffixes = ["bytes","KB","MB","GB"]
+        byte = float(byte)
+        for suffixe in suffixes:
+            if (byte < 1024):
+                return str(round(byte, 2)) + " " + suffixe
+            else:
+                 byte = byte/1024.0
+
     def display(self):
         """ Updates the display with new data
         """
@@ -76,8 +88,12 @@ class DisplayManager():
             # update line count
             y += 1
 
+        self.statWindow.addstr(y,0,"Data served in the last 10s: " + self.readableByte(self.data["shortTerm"]["contentServed"]))
+        y += 1
+
         self.statWindow.addstr(y,0,"Total number of request in the last 2 min: " + str(sum(self.data["longTerm"])))
         y += 1
+
         for numberOfHits, alertTime in self.data["alert"]:
             if (numberOfHits > self.THRESHOLDS):
                 self.statWindow.addstr(y,0, "High traffic generated an alert - hits = " + str(numberOfHits) + ", triggered at " + alertTime.strftime("%H:%M:%S"))

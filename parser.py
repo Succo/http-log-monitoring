@@ -102,6 +102,8 @@ class LogParser():
                                     shortTerm[section] += [entry["ressource"]]
                                 else:
                                     shortTerm[section] = [entry["ressource"]]
+                            if (entry["size"] != "-"):
+                                self.data["shortTerm"]["contentServed"] += int(entry["size"])
                     lineNumber += 1
                 self.files[numberOfFileRead] = (file,lineNumber)
         self.updatingDataLock.release()
