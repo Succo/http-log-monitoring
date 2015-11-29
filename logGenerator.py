@@ -42,7 +42,7 @@ def lineGenerator():
     return line
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Process some integers.')
+    parser = argparse.ArgumentParser(description='Generates fake http log to a file for testing purposes')
 
     parser.add_argument('filename')
     args = parser.parse_args()
