@@ -49,5 +49,6 @@ if __name__ == '__main__':
 
     while True:
         with open(args.filename, 'a') as file:
-            file.write(lineGenerator())
+            for k in range(10):
+                file.write(lineGenerator())
         time.sleep(1)

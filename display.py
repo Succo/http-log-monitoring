@@ -7,7 +7,7 @@ class DisplayManager():
     data on screen it uses curses
     """
 
-    def __init__(self, data, updatingDataLock):
+    def __init__(self, parser, updatingDataLock):
         """ Initialise the curse application
         """
         self.stdscr = curses.initscr()
@@ -26,7 +26,9 @@ class DisplayManager():
         self.updatingDataLock = updatingDataLock
 
         # We keep a reference to the result generated (and updated) by the parser
-        self.data = data
+        self.data = parser.data
+        # We also keep a reference to the thresholds as it serve to know which way we crossed it
+        self.THRESHOLDS = parser.THRESHOLDS
 
         def displayManager(display):
             """ A function to call in loop
@@ -71,6 +73,14 @@ class DisplayManager():
             y += 1
 
         self.statWindow.addstr(y,0,"Total number of request in the last 2 min: " + str(sum(self.data["longTerm"])))
+        y += 1
+        for numberOfHits, alertTime in self.data["alert"]:
+            if (numberOfHits > self.THRESHOLDS):
+                self.statWindow.addstr(y,0, "High traffic generated an alert - hits = " + str(numberOfHits) + ", triggered at " + alertTime.strftime("%H:%M:%S"))
+            else:
+                self.statWindow.addstr(y,0, "Traffic back to normal at " + alertTime.strftime("%H:%M:%S"))
+            y += 1
+
         self.statWindow.refresh()
         self.updatingDataLock.release()
         return

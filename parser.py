@@ -9,6 +9,7 @@ class LogParser():
     """
 
     def __init__(self, files, updatingDataLock):
+        self.THRESHOLDS = 100
         # This list of regex is used to parse each line
         # Most entry are defined as text between space
         parts = [
@@ -39,6 +40,9 @@ class LogParser():
         self.data["shortTerm"] = {}
         # Long term will be used as a pile of 12 item (2min / 10s = 12)
         self.data["longTerm"] = []
+
+        # alert will be a list of all the times where the thresholds is crossed
+        self.data["alert"] = []
 
         # In the short term dict we will store:
         # section (a dict with a list of URL as item)
@@ -98,7 +102,7 @@ class LogParser():
                                 else:
                                     self.data["shortTerm"]["sectionResult"][section] = [entry]
                     lineNumber += 1
-                self.files[numberOfFileRead] = (file,lineNumber-1)
+                self.files[numberOfFileRead] = (file,lineNumber)
         self.updatingDataLock.release()
         return
 
@@ -166,6 +170,18 @@ class LogParser():
             self.data["longTerm"].pop(0)
 
         self.data["longTerm"].append(numberOfRequest)
+
+        # if the alert stack is empty or is finished by an alert below thresholds
+        if ((len(self.data["alert"]) == 0) or (self.data["alert"][len(self.data["alert"])-1][0] < self.THRESHOLDS)):
+            if (sum(self.data["longTerm"]) > self.THRESHOLDS):
+                # We add a tuple, the first item is the number of hit
+                self.data["alert"].append((sum(self.data["longTerm"]), datetime.now()))
+        else:
+            # we are already above thresholds so we nedd to check when we cross the other way
+            if (sum(self.data["longTerm"]) < self.THRESHOLDS):
+                # We add a tuple, the first item is the number of hit
+                self.data["alert"].append((sum(self.data["longTerm"]), datetime.now()))
+
         # In the short term dict we will store:
         # section (a dict with a list of URL as item)
         self.data["shortTerm"]["sectionResult"] = {}
