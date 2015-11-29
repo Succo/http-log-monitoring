@@ -44,13 +44,14 @@ def lineGenerator():
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generates fake http log to a file for testing purposes')
 
-    parser.add_argument('filename')
+    parser.add_argument('filenames', metavar='N', nargs='+', help='Files where to generate fake logs')
     args = parser.parse_args()
-    print('writing fake http log to ' + args.filename)
+    print('writing fake http log to ' + str(args.filenames))
     print('Hit C-c to interrupt')
 
     while True:
-        with open(args.filename, 'a') as file:
-            for k in range(10):
-                file.write(lineGenerator())
-        time.sleep(1)
+        for filePath in args.filenames:
+            with open(filePath, 'a') as file:
+                for k in range(10):
+                    file.write(lineGenerator())
+                time.sleep(1)
