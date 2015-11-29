@@ -11,8 +11,16 @@ class DisplayManager():
         """ Initialise the curse application
         """
         self.stdscr = curses.initscr()
+        if curses.has_colors():
+            curses.start_color()
+            curses.init_pair(1, curses.COLOR_RED, curses.COLOR_BLACK)
+            curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_BLACK)
+            curses.init_pair(3, curses.COLOR_CYAN, curses.COLOR_BLACK)
+
         curses.noecho()
         curses.cbreak()
+
+
         curses.curs_set(0)
         self.stdscr.keypad(True)
         maxY, maxX = self.stdscr.getmaxyx()
@@ -84,21 +92,29 @@ class DisplayManager():
 
         for section in sorted(result, key= lengthFromKey, reverse=True):
             # print the section name followed by the number of view
-            self.statWindow.addstr(y,0,"The section " + section + " has " + str(len(result.get(section))) + " view")
+            self.statWindow.addstr(y,0,"The section ")
+            self.statWindow.addstr(section, curses.color_pair(2))
+            self.statWindow.addstr(" has " + str(len(result.get(section))) + " view")
             # update line count
             y += 1
 
-        self.statWindow.addstr(y,0,"Data served in the last 10s: " + self.readableByte(self.data["shortTerm"]["contentServed"]))
+        self.statWindow.addstr(y,0,"Data served in the last 10s: ")
+        self.statWindow.addstr(self.readableByte(self.data["shortTerm"]["contentServed"]), curses.color_pair(3))
         y += 1
 
-        self.statWindow.addstr(y,0,"Total number of request in the last 2 min: " + str(sum(self.data["longTerm"])))
+        self.statWindow.addstr(y,0,"Total number of request in the last 2 min: ")
+        self.statWindow.addstr(str(sum(self.data["longTerm"])), curses.color_pair(3))
         y += 1
 
         for numberOfHits, alertTime in self.data["alert"]:
             if (numberOfHits > self.THRESHOLDS):
-                self.statWindow.addstr(y,0, "High traffic generated an alert - hits = " + str(numberOfHits) + ", triggered at " + alertTime.strftime("%H:%M:%S"))
+                self.statWindow.addstr(y,0, "High traffic generated an alert - ")
+                self.statWindow.addstr("hits = " + str(numberOfHits),curses.color_pair(1))
+                self.statWindow.addstr(", triggered at ")
+                self.statWindow.addstr(alertTime.strftime("%H:%M:%S"), curses.color_pair(3))
             else:
-                self.statWindow.addstr(y,0, "Traffic back to normal at " + alertTime.strftime("%H:%M:%S"))
+                self.statWindow.addstr(y,0, "Traffic back to normal at ")
+                self.statWindow.addstr(alertTime.strftime("%H:%M:%S"), curses.color_pair(3))
             y += 1
 
         self.statWindow.refresh()
