@@ -94,7 +94,7 @@ class LogParser():
                     if (lineNumber >= latestLineNumber):
                         # first unread line of the file since last call
                         # We process it
-                        section, entry = self.parseLine(line)
+                        section, entry, queryList= self.parseLine(line)
                         if section:
                             # We only check for the time in new file, in previously opened file, we don't wan't to miss any new line
                             if (latestLineNumber > 0) or (abs((entry["time"] - parseTime).total_seconds()) < 10):
@@ -104,11 +104,15 @@ class LogParser():
                                     shortTerm[section] += 1
                                 else:
                                     shortTerm[section] = 1
-                            if (entry["size"] != "-"):
-                                self.data["shortTerm"]["contentServed"] += int(entry["size"])
-                            if (entry["status"] != "-") and (int(entry["status"]) > 400) and (int(entry["status"]) < 500):
-                                self.data["shortTerm"]["failedRequest"] += 1
-
+                                if (entry["size"] != "-"):
+                                    self.data["shortTerm"]["contentServed"] += int(entry["size"])
+                                if (entry["status"] != "-") and (int(entry["status"]) > 400) and (int(entry["status"]) < 500):
+                                    self.data["shortTerm"]["failedRequest"] += 1
+                                for query in queryList:
+                                    if query in self.data["shortTerm"]["queryResult"]:
+                                        self.data["shortTerm"]["queryResult"][query] += 1
+                                    else:
+                                        self.data["shortTerm"]["queryResult"][query] = 1
                     lineNumber += 1
                 self.files[numberOfFileRead] = (file,lineNumber)
         self.updatingDataLock.release()
@@ -120,16 +124,16 @@ class LogParser():
         matched = self.pattern.match(line)
         # In case of broken entry to avoid having the program plant
         if (matched == None):
-            return (False , False)
+            return (False , False, False)
         entry = matched.groupdict()
         date = entry["time"]
         # we take the date a python date object for easier manipulation
         entry["time"] = datetime.strptime(date, "%d/%b/%Y:%H:%M:%S %z")
         # we process the request to remove first the queries,
         # then extract the section
-        section = self.clearQuery(entry["ressource"])
+        section, queryList= self.clearQuery(entry["ressource"])
         section = self.extractSection(section)
-        return (section, entry)
+        return (section, entry, queryList)
 
     def extractSection(self, ressource):
         """Given a string corresponding to a
@@ -154,16 +158,15 @@ class LogParser():
         # we split the string to get an array of the querry
         # and the reqest itself
         requestAndQuery = re.split(r'[&?;]', ressource )
-        for query in requestAndQuery[1:]:
-            # We are going to stock the query in an array
-            # to be able to generate other interesting stats
+        def removeValue(query):
+            """ A function to remove to keep only
+            the key from a query string
+            """
             key, sep, value = query.partition("=")
-            if key in self.data["shortTerm"]["queryResult"]:
-                self.data["shortTerm"]["queryResult"][key] += 1
-            else:
-                self.data["shortTerm"]["queryResult"][key] = 1
-        # We then return the request striped of query
-        return requestAndQuery[0]
+            return key
+        queryList = map(removeValue, requestAndQuery[1:])
+        # We then return the request striped of query and a list of the query made
+        return (requestAndQuery[0], queryList)
 
     def updateData(self):
         """Will serves to update the data obect
