@@ -102,6 +102,12 @@ class DisplayManager():
         self.statWindow.addstr(self.readableByte(self.data["shortTerm"]["contentServed"]), curses.color_pair(3))
         y += 1
 
+        if (self.data["shortTerm"]["failedRequest"] > 0):
+            self.statWindow.addstr(y,0,"In the last 10s there were ")
+            self.statWindow.addstr(str(self.data["shortTerm"]["failedRequest"]), curses.color_pair(3))
+            self.statWindow.addstr(" badly formed request")
+            y += 1
+
         self.statWindow.addstr(y,0,"Total number of request in the last 2 min: ")
         self.statWindow.addstr(str(sum(self.data["longTerm"])), curses.color_pair(3))
         y += 1

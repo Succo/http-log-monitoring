@@ -51,6 +51,8 @@ class LogParser():
         self.data["shortTerm"]["queryResult"] = {}
         # total size of the content served by the server
         self.data["shortTerm"]["contentServed"] = 0
+        # total size of the content served by the server
+        self.data["shortTerm"]["failedRequest"] = 0
 
         # Keep the lock to block every time we parse data
         self.updatingDataLock = updatingDataLock
@@ -104,6 +106,9 @@ class LogParser():
                                     shortTerm[section] = [entry["ressource"]]
                             if (entry["size"] != "-"):
                                 self.data["shortTerm"]["contentServed"] += int(entry["size"])
+                            if (entry["status"] != "-") and (int(entry["status"]) > 400) and (int(entry["status"]) < 500):
+                                self.data["shortTerm"]["failedRequest"] += 1
+
                     lineNumber += 1
                 self.files[numberOfFileRead] = (file,lineNumber)
         self.updatingDataLock.release()
@@ -192,3 +197,5 @@ class LogParser():
         self.data["shortTerm"]["queryResult"] = {}
         # total size of the content served by the server
         self.data["shortTerm"]["contentServed"] = 0
+        # total size of the content served by the server
+        self.data["shortTerm"]["failedRequest"] = 0

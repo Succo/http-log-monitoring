@@ -36,7 +36,11 @@ def lineGenerator():
     date = datetime.now(timezone.utc).strftime("%d/%b/%Y:%H:%M:%S %z")
     line += date +'] "GET '
     section = sectionList[random.randrange(21)]
-    line += section +' HTTP/1.1" 200 '
+    line += section +' HTTP/1.1" '
+    if (random.randrange(21)>19):
+        line += '404 '
+    else:
+        line += '200 '
     line += str(random.randrange(3000, 7000))
     line += ' "-" ""Mozilla/5.0 (compatible; pythonLogGenerator/0.1)""\n'
     return line
