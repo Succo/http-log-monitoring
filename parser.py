@@ -101,9 +101,9 @@ class LogParser():
                                 # Then we add it to our dict of result to the
                                 # proper place
                                 if section in shortTerm:
-                                    shortTerm[section] += [entry["ressource"]]
+                                    shortTerm[section] += 1
                                 else:
-                                    shortTerm[section] = [entry["ressource"]]
+                                    shortTerm[section] = 1
                             if (entry["size"] != "-"):
                                 self.data["shortTerm"]["contentServed"] += int(entry["size"])
                             if (entry["status"] != "-") and (int(entry["status"]) > 400) and (int(entry["status"]) < 500):
@@ -172,7 +172,7 @@ class LogParser():
         # In the long term dict we just keep the number of request in the last segment
         numberOfRequest = 0
         for section in self.data["shortTerm"]["sectionResult"]:
-            numberOfRequest += len(self.data["shortTerm"]["sectionResult"][section])
+            numberOfRequest += self.data["shortTerm"]["sectionResult"][section]
         # We only keep up to 12 item if the long term result
         if (len(self.data["longTerm"])) > 11:
             self.data["longTerm"].pop(0)

@@ -84,19 +84,15 @@ class DisplayManager():
         # To reduce code cruft
         result = self.data["shortTerm"]["sectionResult"]
 
-        # This functions serve to remove one loop of data processing
-        # sorted second argument must be a function returning a comparison key
-        # so we need this function to do so
-        def lengthFromKey(x):
-            return len(result.get(x))
-
-        for section in sorted(result, key= lengthFromKey, reverse=True):
+        if (len(result) != 0):
+            section = max(result, key=result.get)
             # print the section name followed by the number of view
             self.statWindow.addstr(y,0,"The section ")
             self.statWindow.addstr(section, curses.color_pair(2))
-            self.statWindow.addstr(" has " + str(len(result.get(section))) + " view")
-            # update line count
-            y += 1
+            self.statWindow.addstr(" has the most view: ")
+            self.statWindow.addstr(str(result.get(section)), curses.color_pair(2))
+        # update line count
+        y += 1
 
         self.statWindow.addstr(y,0,"Data served in the last 10s: ")
         self.statWindow.addstr(self.readableByte(self.data["shortTerm"]["contentServed"]), curses.color_pair(3))
@@ -104,9 +100,13 @@ class DisplayManager():
 
         if (self.data["shortTerm"]["failedRequest"] > 0):
             self.statWindow.addstr(y,0,"In the last 10s there were ")
-            self.statWindow.addstr(str(self.data["shortTerm"]["failedRequest"]), curses.color_pair(3))
+            self.statWindow.addstr(str(self.data["shortTerm"]["failedRequest"]), curses.color_pair(1))
             self.statWindow.addstr(" badly formed request")
-            y += 1
+        else:
+            self.statWindow.addstr(y,0,"In the last 10s there were ")
+            self.statWindow.addstr("no", curses.color_pair(2))
+            self.statWindow.addstr(" badly formed request")
+        y += 1
 
         self.statWindow.addstr(y,0,"Total number of request in the last 2 min: ")
         self.statWindow.addstr(str(sum(self.data["longTerm"])), curses.color_pair(3))
@@ -121,7 +121,7 @@ class DisplayManager():
             else:
                 self.statWindow.addstr(y,0, "Traffic back to normal at ")
                 self.statWindow.addstr(alertTime.strftime("%H:%M:%S"), curses.color_pair(3))
-            y += 1
+        y += 1
 
         self.statWindow.refresh()
         self.updatingDataLock.release()
