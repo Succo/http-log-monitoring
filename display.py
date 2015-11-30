@@ -179,13 +179,15 @@ class DisplayManager():
         self.longTermColumn.clear()
         self.alertDateColumn.clear()
 
+        shortTerm = self.data["shortTerm"]
+
         # We first fill the data from the shortTermStatWindow (first,second and third columm)
         # serves as a line counter for text printing
         y = 1
         # The section and query data structure are identical so we can use the same code to display both
         for text in ["section", "query"]:
             # To reduce code cruft
-            result = self.data["shortTerm"][text + "Result"]
+            result = shortTerm[text + "Result"]
 
             if (len(result) != 0):
                 section = max(result, key=result.get)
@@ -197,24 +199,24 @@ class DisplayManager():
             y += 1
 
         y += 1
-        self.firstColumn.addstr(y, 0,self.readableByte(self.data["shortTerm"]["contentServed"]), curses.color_pair(3))
+        self.firstColumn.addstr(y, 0,self.readableByte(shortTerm["contentServed"]), curses.color_pair(3))
         y += 1
 
-        if (self.data["shortTerm"]["failedRequest"] > 0):
-            self.firstColumn.addstr(y, 0, str(self.data["shortTerm"]["failedRequest"]), curses.color_pair(1))
+        if (shortTerm["failedRequest"] > 0):
+            self.firstColumn.addstr(y, 0, str(shortTerm["failedRequest"]), curses.color_pair(1))
         else:
             self.firstColumn.addstr(y, 0,"0", curses.color_pair(2))
 
         # Stats in the long term window
         self.longTermColumn.addstr(1, 0, str(sum(self.data["longTerm"])), curses.color_pair(3))
 
+        alert = self.data["alert"]
         # Stats in the alarm
-        if ((len(self.data["alert"]) == 0) or (self.data["alert"][len(self.data["alert"])-1][0] < self.THRESHOLDS)):
+        if ((len(alert) == 0) or (alert[len(alert)-1][0] < self.THRESHOLDS)):
                 self.alertColumn.addstr(0 , 15, " OK  ", curses.color_pair(2))
         else:
                 self.alertColumn.addstr(0 , 15, " NOK ",curses.color_pair(1))
 
-        alert = self.data["alert"]
         alertY, alertX = self.alertColumn.getmaxyx()
 
         # We want to print the log from y = 1 to y = alertY finishing with the latest

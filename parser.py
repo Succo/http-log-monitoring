@@ -79,7 +79,7 @@ class LogParser():
         # This is the time where we started processing
         # it serves to check that we are only adding recent entry to our data
         parseTime = datetime.now(timezone.utc)
-        shortTerm = self.data["shortTerm"]["sectionResult"]
+        shortTerm = self.data["shortTerm"]
         for numberOfFileRead  in range(len(self.files)):
             # we read the list that way to be able to update it place
             file, latestLineNumber = self.files[numberOfFileRead]
@@ -100,19 +100,19 @@ class LogParser():
                             if (latestLineNumber > 0) or (abs((entry["time"] - parseTime).total_seconds()) < 10):
                                 # Then we add it to our dict of result to the
                                 # proper place
-                                if section in shortTerm:
-                                    shortTerm[section] += 1
+                                if section in shortTerm["sectionResult"]:
+                                    shortTerm["sectionResult"][section] += 1
                                 else:
-                                    shortTerm[section] = 1
+                                    shortTerm["sectionResult"][section] = 1
                                 if (entry["size"] != "-"):
-                                    self.data["shortTerm"]["contentServed"] += int(entry["size"])
+                                    shortTerm["contentServed"] += int(entry["size"])
                                 if (entry["status"] != "-") and (int(entry["status"]) > 400) and (int(entry["status"]) < 500):
-                                    self.data["shortTerm"]["failedRequest"] += 1
+                                    shortTerm["failedRequest"] += 1
                                 for query in queryList:
                                     if query in self.data["shortTerm"]["queryResult"]:
-                                        self.data["shortTerm"]["queryResult"][query] += 1
+                                        shortTerm["queryResult"][query] += 1
                                     else:
-                                        self.data["shortTerm"]["queryResult"][query] = 1
+                                        shortTerm["queryResult"][query] = 1
                     lineNumber += 1
                 self.files[numberOfFileRead] = (file,lineNumber)
         self.updatingDataLock.release()
