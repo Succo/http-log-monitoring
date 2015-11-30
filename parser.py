@@ -159,9 +159,9 @@ class LogParser():
             # to be able to generate other interesting stats
             key, sep, value = query.partition("=")
             if key in self.data["shortTerm"]["queryResult"]:
-                self.data["shortTerm"]["queryResult"][key] += [value]
+                self.data["shortTerm"]["queryResult"][key] += 1
             else:
-                self.data["shortTerm"]["queryResult"][key] = [value]
+                self.data["shortTerm"]["queryResult"][key] = 1
         # We then return the request striped of query
         return requestAndQuery[0]
 

@@ -32,10 +32,29 @@ def lineGenerator():
         '/images',
         '/nxmen'
     ]
+    queryList = [
+        "_task=mail",
+        "_remote=1",
+        "_unlock=0",
+        "_action=getunread",
+        "_task=mail",
+        "_refresh=1",
+        "_mbox=INBOX",
+        "_remote=1",
+        "_unlock=loading1447574840064",
+        "_action=list",
+        "_=1447574839937"
+    ]
     line =  "127.0.0.1 - - ["
     date = datetime.now(timezone.utc).strftime("%d/%b/%Y:%H:%M:%S %z")
     line += date +'] "GET '
-    section = sectionList[random.randrange(21)]
+    section = sectionList[random.randrange(len(sectionList))]
+    for i in range(random.randrange(3)):
+        if (i == 0):
+            section += "?"
+        else:
+            section += "&"
+        section+= queryList[random.randrange(len(queryList))]
     line += section +' HTTP/1.1" '
     if (random.randrange(21)>19):
         line += '404 '

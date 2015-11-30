@@ -81,18 +81,20 @@ class DisplayManager():
 
         # serves as a line counter for text printing
         y = 0
-        # To reduce code cruft
-        result = self.data["shortTerm"]["sectionResult"]
+        # The section and query data structure are identical so we can use the same code to display both
+        for text in ["section", "query"]:
+            # To reduce code cruft
+            result = self.data["shortTerm"][text + "Result"]
 
-        if (len(result) != 0):
-            section = max(result, key=result.get)
-            # print the section name followed by the number of view
-            self.statWindow.addstr(y,0,"The section ")
-            self.statWindow.addstr(section, curses.color_pair(2))
-            self.statWindow.addstr(" has the most view: ")
-            self.statWindow.addstr(str(result.get(section)), curses.color_pair(2))
-        # update line count
-        y += 1
+            if (len(result) != 0):
+                section = max(result, key=result.get)
+                # print the section name followed by the number of view
+                self.statWindow.addstr(y,0,"The "+ text +" ")
+                self.statWindow.addstr(section, curses.color_pair(2))
+                self.statWindow.addstr(" has the most view: ")
+                self.statWindow.addstr(str(result.get(section)), curses.color_pair(2))
+            # update line count
+            y += 1
 
         self.statWindow.addstr(y,0,"Data served in the last 10s: ")
         self.statWindow.addstr(self.readableByte(self.data["shortTerm"]["contentServed"]), curses.color_pair(3))
