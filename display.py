@@ -142,7 +142,9 @@ class DisplayManager():
         # We just need one column for this block
         # Be careful this Column overlapse the top row
         # So we must not update the first line
-        self.alertColumn = alertWindow.derwin(alertY-1, alertX-2, 0, 1)
+        self.alertColumn = alertWindow.derwin(alertY-1, alertX-11, 0, 1)
+        self.alertDateColumn = alertWindow.derwin(alertY-2, 9, 1, alertX-10)
+
 
     def clearCurse(self):
         """ Clean the curse application
@@ -175,6 +177,7 @@ class DisplayManager():
         self.secondColumn.clear()
         self.thirdColumn.clear()
         self.longTermColumn.clear()
+        self.alertDateColumn.clear()
 
         # We first fill the data from the shortTermStatWindow (first,second and third columm)
         # serves as a line counter for text printing
@@ -213,10 +216,12 @@ class DisplayManager():
 
         alert = self.data["alert"]
         alertY, alertX = self.alertColumn.getmaxyx()
+
         # We want to print the log from y = 1 to y = alertY finishing with the latest
         y = min(len(alert), alertY-1)
         if y < len(alert):
             alert = alert[len(alert)-y:]
+
         for numberOfHits, alertTime in alert:
             if(y>0):
                 # We move the cusor to be able to call clrtoeol
@@ -225,11 +230,11 @@ class DisplayManager():
                 if (numberOfHits > self.THRESHOLDS):
                     self.alertColumn.addstr(y,0, "High traffic generated an alert - ")
                     self.alertColumn.addstr("hits = " + str(numberOfHits),curses.color_pair(1))
-                    self.alertColumn.addstr(", triggered at ")
-                    self.alertColumn.addstr(alertTime.strftime("%H:%M:%S"), curses.color_pair(3))
+                    self.alertColumn.addstr(", triggered at :")
+                    self.alertDateColumn.addstr(y-1, 0,alertTime.strftime("%H:%M:%S"), curses.color_pair(3))
                 else:
-                    self.alertColumn.addstr(y,0, "Traffic back to normal at ")
-                    self.alertColumn.addstr(alertTime.strftime("%H:%M:%S"), curses.color_pair(3))
+                    self.alertColumn.addstr(y,0, "Traffic back to normal at :")
+                    self.alertDateColumn.addstr(y-1, 0,alertTime.strftime("%H:%M:%S"), curses.color_pair(3))
                 y -= 1
 
         self.firstColumn.refresh()
@@ -237,6 +242,7 @@ class DisplayManager():
         self.thirdColumn.refresh()
         self.longTermColumn.refresh()
         self.alertColumn.refresh()
+        self.alertDateColumn.refresh()
 
         self.updatingDataLock.release()
         return
