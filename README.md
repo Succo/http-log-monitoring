@@ -12,3 +12,26 @@ Create a simple console program that monitors HTTP traffic on your machine:
  * Make sure all messages showing when alerting thresholds are crossed remain visible on the page for historical reasons.
  * Write a test for the alerting logic
  * Explain how you’d improve on this application design
+
+
+## How to use it
+The main program is logMonitor.py. It only require python 3.
+You launch it with :
+
+```
+$.\logMonitor.py [-h] [-t threshold] (a list of log files to watch)
+```
+
+Once launched it will display different info on the log it is watching.
+It display about the latest 10s:
+* The most viewed section, it's number of view and the total number of view
+* The most viewed query, it's number of hit and the total number of query
+* The total amount of data served by the server
+* The number of error served by the server
+
+It display about the latest 2 minutes:
+* the total number of view
+
+It also display a list of all the time the number of view during the latest two minutes crossed a certain threshold (default = 1000,but anything can be passed as an argument)
+
+If the size of the console allows it it will also display a list of all section from the latest 10s.
