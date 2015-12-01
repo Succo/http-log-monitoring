@@ -26,7 +26,7 @@ class DisplayManager():
             """
             while True:
                 self.display()
-                time.sleep(1)
+                time.sleep(10)
 
         self.initialiseCurse()
 

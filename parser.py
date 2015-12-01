@@ -64,7 +64,7 @@ class LogParser():
             while True:
                 self.updateData()
                 self.parse()
-                time.sleep(1)
+                time.sleep(10)
 
         # We define a thread to call too parse the files
         self.parserManager = threading.Thread(target=parseManager, daemon = True)
