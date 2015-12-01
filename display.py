@@ -62,11 +62,21 @@ class DisplayManager():
         # That's the inside on the previous one
         generalDisplay = windowBorder.derwin(maxY-2, maxX-1, 0, 0)
 
-        shortTermStatY, shortTermStatX = (9, min(maxX-2, 95))
+        # If the of the display is big enough we add another window on the left
+        # else we do nothing to have a nicer display
+        # I assumed we need 95 block to display the first part in an optimal way and 30 for the second (total = 125)
+        if (maxX-2) > 125:
+            firstDisplayX = 95
+            secondDisplayX = (maxX-2) - 95
+        else:
+            firstDisplayX = maxX-2
+            secondDisplayX = None
+        # Height of the first window (displaying stat from the last 10s)
+        shortTermStatY = 9
 
         # This is the window where we will display data on the latest 10s
         # We prefill it with the imutable text
-        shortTermStatWindow = generalDisplay.derwin(shortTermStatY, shortTermStatX, 1, 1)
+        shortTermStatWindow = generalDisplay.derwin(shortTermStatY, firstDisplayX, 1, 1)
         shortTermStatWindow.border()
 
         # serves as a line counter for text printing, so I can add new line easily
@@ -108,7 +118,7 @@ class DisplayManager():
         self.thirdColumn = shortTermStatWindow.derwin(shortStatHeigh-2, 4, 1, 3*space + 61)
 
         # Now we generate a new window for the data on the last 2 minutes
-        longTermStatY, longTermStatX = (5, min(maxX-2, 95))
+        longTermStatY, longTermStatX = (5, firstDisplayX)
 
         # We prefill it with the imutable text
         longTermStatWindow = generalDisplay.derwin(longTermStatY, longTermStatX, shortTermStatY + 1, 1)
@@ -127,7 +137,7 @@ class DisplayManager():
 
         # Now we generate a new window for the alerts
         # the Y dimension is all that's left to display the maximun amount of alert possible
-        alertY, alertX = (maxY- longTermStatY - shortTermStatY -3, min(maxX-2, 95))
+        alertY, alertX = (maxY- longTermStatY - shortTermStatY -3, firstDisplayX)
 
         # We prefill it with the imutable text
         alertWindow = generalDisplay.derwin(alertY, alertX,  longTermStatY + shortTermStatY + 1, 1)
@@ -145,6 +155,16 @@ class DisplayManager():
         self.alertColumn = alertWindow.derwin(alertY-1, alertX-11, 0, 1)
         self.alertDateColumn = alertWindow.derwin(alertY-2, 9, 1, alertX-10)
 
+        # If there is enough place for it we define the second column
+        if secondDisplayX:
+            sectionWindow = generalDisplay.derwin(maxY-3, secondDisplayX, 1, firstDisplayX + 1)
+            sectionWindow.border()
+            sectionWindow.addstr(y,3,"Statistics on section: ")
+            self.sectionColumn = sectionWindow.derwin(maxY-4, secondDisplayX-6, 1, 1)
+            self.sectionHitColumn = sectionWindow.derwin(maxY-4, 4, 1, secondDisplayX-5)
+        else:
+            self.sectionColumn = None
+            self.sectionHitColumn = None
 
     def clearCurse(self):
         """ Clean the curse application
@@ -178,6 +198,9 @@ class DisplayManager():
         self.thirdColumn.clear()
         self.longTermColumn.clear()
         self.alertDateColumn.clear()
+        if self.sectionColumn:
+            self.sectionColumn.clear()
+            self.sectionHitColumn.clear()
 
         shortTerm = self.data["shortTerm"]
 
@@ -239,12 +262,28 @@ class DisplayManager():
                     self.alertDateColumn.addstr(y-1, 0,alertTime.strftime("%H:%M:%S"), curses.color_pair(3))
                 y -= 1
 
+        # We display data in the left column if it is defined
+        if self.sectionColumn:
+            y = 0
+            result = shortTerm["sectionResult"]
+
+            for section in sorted(result, key=result.get, reverse = True):
+                # Add text to the emplacement
+                self.sectionColumn.addstr(y, 0, section, curses.color_pair(3))
+                self.sectionHitColumn.addstr(y, 0, str(result.get(section)), curses.color_pair(2))
+                # update line count
+                y += 1
+
+
         self.firstColumn.refresh()
         self.secondColumn.refresh()
         self.thirdColumn.refresh()
         self.longTermColumn.refresh()
         self.alertColumn.refresh()
         self.alertDateColumn.refresh()
+        if self.sectionColumn:
+            self.sectionColumn.refresh()
+            self.sectionHitColumn.refresh()
 
         self.updatingDataLock.release()
         return
