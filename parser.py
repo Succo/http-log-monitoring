@@ -8,8 +8,8 @@ class LogParser():
     to process log and return a dict
     """
 
-    def __init__(self, files, updatingDataLock):
-        self.THRESHOLDS = 100
+    def __init__(self, files, updatingDataLock, threshold):
+        self.THRESHOLDS = threshold
         # This list of regex is used to parse each line
         # Most entry are defined as text between space
         parts = [
