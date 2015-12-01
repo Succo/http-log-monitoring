@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import argparse
 import time
 import random
@@ -69,7 +72,7 @@ def lineGenerator():
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generates fake http log to a file for testing purposes')
 
-    parser.add_argument('filenames', metavar='N', nargs='+', help='Files where to generate fake logs')
+    parser.add_argument('filenames', metavar='log files', nargs='+', help='Files where to generate fake logs')
     args = parser.parse_args()
 
     # Rate is the number of log entry by seconds (default 1)
