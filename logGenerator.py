@@ -2,6 +2,8 @@ import argparse
 import time
 import random
 from datetime import datetime, timezone
+import threading
+import curses
 
 def lineGenerator():
     """ Function to generate fake line similar to http log
@@ -69,12 +71,63 @@ if __name__ == '__main__':
 
     parser.add_argument('filenames', metavar='N', nargs='+', help='Files where to generate fake logs')
     args = parser.parse_args()
-    print('writing fake http log to ' + str(args.filenames))
-    print('Hit C-c to interrupt')
 
-    while True:
-        for filePath in args.filenames:
-            with open(filePath, 'a') as file:
-                for k in range(10):
-                    file.write(lineGenerator())
-                time.sleep(1)
+    # Rate is the number of log entry by seconds (default 1)
+    # No need to add a lock for it as one thread only execute atomic operation on it
+    # and doesn't update it
+    rate = 1
+
+    # We uses cures for esthetics and key detection
+    stdscr = curses.initscr()
+    curses.noecho()
+    curses.cbreak()
+    curses.curs_set(0)
+
+    stdscr.addstr(1,1,'Writing fake http log to ' + str(args.filenames))
+    stdscr.addstr(2,1,'Hit q to interrupt')
+    stdscr.addstr(3,1, 'Press I to increase rate and D to decrease')
+    stdscr.addstr(4,1, 'Actual rate is ' + str(rate) + ' per second')
+
+    def updateLog():
+        """ A function to continously update the log
+        needs to be run in a thread
+        """
+        global rate
+        while True:
+            for filePath in args.filenames:
+                with open(filePath, 'a') as file:
+                    for k in range(rate):
+                        file.write(lineGenerator())
+                    time.sleep(1)
+
+    def watchKeyPress():
+        """A function to check for key press and act upon them
+        needs to be run in the main thread
+        """
+        global rate, stdscr
+        while True:
+            key = stdscr.getkey()
+            if (key == 'q'):
+                # only return on q
+                return
+            elif (key == 'i'):
+                rate += 1
+            elif ((key == 'd') and (rate > 0)):
+                rate -= 1
+            stdscr.move(4,0)
+            stdscr.clrtoeol()
+            stdscr.addstr(4,1, 'Actual rate is ' + str(rate) + ' per second')
+
+
+    # We run the update log in it's own thread
+    updateLogThread = threading.Thread(target=updateLog, daemon = True)
+    updateLogThread.start()
+
+    # We keep watching for key press
+    watchKeyPress()
+
+    # When the function return we can clean curse
+    curses.nocbreak()
+    stdscr.keypad(False)
+    curses.echo()
+    curses.endwin()
