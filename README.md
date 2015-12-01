@@ -35,3 +35,9 @@ It display about the latest 2 minutes:
 It also display a list of all the time the number of view during the latest two minutes crossed a certain threshold (default = 1000,but anything can be passed as an argument)
 
 If the size of the console allows it it will also display a list of all section from the latest 10s.
+
+You can generate basic fake logs using
+```
+$.\logGenerator.py [-h] (a list of log files to watch)
+```
+You can then controls the rate at which the log is generated (number of line per seconds).
