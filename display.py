@@ -20,18 +20,18 @@ class DisplayManager():
         # We keep a reference to the lock
         self.updatingDataLock = updatingDataLock
 
-        def displayManager(display):
+        def displayManager():
             """ A function to call in loop
             display and update it
             """
             while True:
-                display()
+                self.display()
                 time.sleep(1)
 
         self.initialiseCurse()
 
         # We define a thread to call to update the display
-        self.display = threading.Thread(target=displayManager, args= (self.display,), daemon = True)
+        self.displayManager = threading.Thread(target=displayManager, daemon = True)
         return
 
     def initialiseCurse(self):

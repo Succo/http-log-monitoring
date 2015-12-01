@@ -57,17 +57,17 @@ class LogParser():
         # Keep the lock to block every time we parse data
         self.updatingDataLock = updatingDataLock
 
-        def parseManager(parse):
+        def parseManager():
             """ A function to call in loop
             display and update it
             """
             while True:
                 self.updateData()
-                parse()
+                self.parse()
                 time.sleep(1)
 
         # We define a thread to call too parse the files
-        self.parse = threading.Thread(target=parseManager, args= (self.parse,), daemon = True)
+        self.parserManager = threading.Thread(target=parseManager, daemon = True)
 
     def parse(self):
         """ Return a dictionnary of all
